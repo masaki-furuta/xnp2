@@ -49,7 +49,7 @@ static void info_cpu(OEMCHAR *str, int maxlen, const NP2INFOEX *ex) {
 	UINT	family;
 
 #if defined(CPU_FAMILY)
-	family = min(CPU_FAMILY, 6);
+	family = xnp2min(CPU_FAMILY, 6);
 #else
 	family = (CPU_TYPE & CPUTYPE_V30)?1:2;
 #endif

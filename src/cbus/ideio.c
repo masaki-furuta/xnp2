@@ -936,7 +936,7 @@ const UINT8	*ptr;
 		return(FAILURE);
 	}
 	while(count) {
-		r = min(count, drv->dabufrem);
+		r = xnp2min(count, drv->dabufrem);
 		if (r) {
 			count -= r;
 			ptr = drv->dabuf + 2352 - (drv->dabufrem * 4);

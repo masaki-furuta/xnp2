@@ -55,7 +55,7 @@ static void streamprepare(UINT samples) {
 	CBTBL	*cb;
 	UINT	count;
 
-	count = min(sndstream.remain, samples);
+	count = xnp2min(sndstream.remain, samples);
 	if (count) {
 		ZeroMemory(sndstream.ptr, count * 2 * sizeof(SINT32));
 		cb = sndstream.cb;
@@ -133,7 +133,7 @@ static void streamfilewrite(UINT nSamples)
 
 	while (nSamples)
 	{
-		nCount = min(nSamples, 512);
+		nCount = xnp2min(nSamples, 512);
 		memset(buf32, 0, nCount * 2 * sizeof(buf32[0]));
 		cb = sndstream.cb;
 		while (cb < sndstream.cbreg)
@@ -141,7 +141,7 @@ static void streamfilewrite(UINT nSamples)
 			cb->cbfn(cb->hdl, buf32, nCount);
 			cb++;
 		}
-		r = min(sndstream.remain, nCount);
+		r = xnp2min(sndstream.remain, nCount);
 		if (r)
 		{
 			memcpy(sndstream.ptr, buf32, r * 2 * sizeof(buf32[0]));
@@ -179,7 +179,7 @@ static void filltailsample(UINT nCount)
 	SINT32 nSampleL;
 	SINT32 nSampleR;
 
-	nCount = min(sndstream.remain, nCount);
+	nCount = xnp2min(sndstream.remain, nCount);
 	if (nCount)
 	{
 		ptr = sndstream.ptr;

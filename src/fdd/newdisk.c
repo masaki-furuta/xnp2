@@ -42,7 +42,7 @@ static BRESULT writezero(FILEH fh, UINT size) {
 
 	ZeroMemory(work, sizeof(work));
 	while(size) {
-		wsize = min(size, sizeof(work));
+		wsize = xnp2min(size, sizeof(work));
 		if (file_write(fh, work, wsize) != wsize) {
 			return(FAILURE);
 		}
@@ -69,7 +69,7 @@ static BRESULT writehddipl(FILEH fh, UINT ssize, UINT32 tsize) {
 		tsize -= sizeof(work);
 		ZeroMemory(work, sizeof(work));
 		while(tsize) {
-			size = min(tsize, sizeof(work));
+			size = xnp2min(tsize, sizeof(work));
 			tsize -= size;
 			if (file_write(fh, work, size) != size) {
 				return(FAILURE);

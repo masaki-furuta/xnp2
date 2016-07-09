@@ -86,7 +86,7 @@ void cs4231_dma(NEVENTITEM item) {
 			if (cs4231.bufsize > cs4231.bufdatas) {
 				rem = cs4231.bufsize - cs4231.bufdatas;
 				pos = (cs4231.bufpos + cs4231.bufdatas) & CS4231_BUFMASK;
-				size = min(rem, CS4231_BUFFERS - pos);
+				size = xnp2min(rem, CS4231_BUFFERS - pos);
 				r = dmac_getdatas(dmach, cs4231.buffer + pos, size);
 				rem -= r;
 				cs4231.bufdatas += r;
@@ -167,7 +167,7 @@ static void setdataalign(void) {
 	step = (0 - cs4231.bufpos) & 3;
 	if (step) {
 		cs4231.bufpos += step;
-		cs4231.bufdatas -= min(step, cs4231.bufdatas);
+		cs4231.bufdatas -= xnp2min(step, cs4231.bufdatas);
 	}
 	cs4231.bufdatas &= ~3;
 }

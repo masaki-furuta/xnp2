@@ -69,7 +69,7 @@ static REG8 sec2048_read(SXSIDEV sxsi, long pos, UINT8 *buf, UINT size) {
 		return(0xd0);
 	}
 	while(size) {
-		rsize = min(size, 2048);
+		rsize = xnp2min(size, 2048);
 		CPU_REMCLOCK -= rsize;
 		if (file_read(fh, buf, rsize) != rsize) {
 			return(0xd0);
@@ -132,7 +132,7 @@ static REG8 sec2352_read(SXSIDEV sxsi, long pos, UINT8 *buf, UINT size) {
 		if (file_seek(fh, fpos, FSEEK_SET) != fpos) {
 			return(0xd0);
 		}
-		rsize = min(size, 2048);
+		rsize = xnp2min(size, 2048);
 		CPU_REMCLOCK -= rsize;
 		if (file_read(fh, buf, rsize) != rsize) {
 			return(0xd0);
@@ -218,7 +218,7 @@ static BRESULT openimg(SXSIDEV sxsi, const OEMCHAR *path,
 	cdinfo->fh = fh;
 	cdinfo->type = type;
 	if ((trk != NULL) && (trks != 0)) {
-		trks = min(trks, NELEMENTS(cdinfo->trk) - 1);
+		trks = xnp2min(trks, NELEMENTS(cdinfo->trk) - 1);
 		CopyMemory(cdinfo->trk, trk, trks * sizeof(_CDTRK));
 	}
 	else {

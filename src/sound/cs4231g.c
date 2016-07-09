@@ -43,7 +43,7 @@ const UINT8	*ptr2;
 		pos12 += cs->step12;
 	} while(--count);
 
-	leng = min(leng, (pos12 >> 12));
+	leng = xnp2min(leng, (pos12 >> 12));
 	cs->bufdatas -= (leng << 0);
 	cs->bufpos += (leng << 0);
 	cs->pos12 = pos12 & ((1 << 12) - 1);
@@ -87,7 +87,7 @@ const UINT8	*ptr2;
 		pos12 += cs->step12;
 	} while(--count);
 
-	leng = min(leng, (pos12 >> 12));
+	leng = xnp2min(leng, (pos12 >> 12));
 	cs->bufdatas -= (leng << 1);
 	cs->bufpos += (leng << 1);
 	cs->pos12 = pos12 & ((1 << 12) - 1);
@@ -128,7 +128,7 @@ const UINT8	*ptr2;
 		pos12 += cs->step12;
 	} while(--count);
 
-	leng = min(leng, (pos12 >> 12));
+	leng = xnp2min(leng, (pos12 >> 12));
 	cs->bufdatas -= (leng << 1);
 	cs->bufpos += (leng << 1);
 	cs->pos12 = pos12 & ((1 << 12) - 1);
@@ -172,7 +172,7 @@ const UINT8	*ptr2;
 		pos12 += cs->step12;
 	} while(--count);
 
-	leng = min(leng, (pos12 >> 12));
+	leng = xnp2min(leng, (pos12 >> 12));
 	cs->bufdatas -= (leng << 2);
 	cs->bufpos += (leng << 2);
 	cs->pos12 = pos12 & ((1 << 12) - 1);
