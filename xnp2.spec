@@ -14,7 +14,7 @@ BuildRequires:  libusb-devel
 Patch0:         gcc6-dirty.patch
 
 %description
-np2 is a port for UNIX with X11 of "Neko Project II" PC-9801 emulator. http://www.nonakap.org/np2/
+Xnp2 is a port for UNIX with X11 of "Neko Project II" PC-9801 emulator. http://www.nonakap.org/np2/
 
 %prep
 %setup -q

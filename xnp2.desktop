@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Xnp2
+Comment=
+Exec=xnp2
+Terminal=false
+Type=Application
+Icon=/home/masaki/.local/share/applications/xnp2.png
+X-Desktop-File-Install-Version=0.22
