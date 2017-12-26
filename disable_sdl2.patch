@@ -1,0 +1,13 @@
+--- xnp2-0.86/x11/configure.ac.orig	2017-12-25 23:28:29.460823465 +0900
++++ xnp2-0.86/x11/configure.ac	2017-12-25 23:28:52.036013956 +0900
+@@ -91,8 +91,8 @@
+   AC_HELP_STRING([--enable-sdl],[Use SDL 1.2 library [default=yes]]),,
+   [enable_sdl="yes"])
+ AC_ARG_ENABLE(sdl2,
+-  AC_HELP_STRING([--enable-sdl2],[Use SDL 2.0 library [default=yes]]),,
+-  [enable_sdl2="yes"])
++  AC_HELP_STRING([--enable-sdl2],[Use SDL 2.0 library [default=no]]),,
++  [enable_sdl2="no"])
+ AC_ARG_ENABLE(sdlmixer,
+   AC_HELP_STRING([--enable-sdlmixer],[Use SDL_mixer library [default=yes]]),,
+   [enable_sdlmixer="yes"])

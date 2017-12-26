@@ -1,0 +1,1075 @@
+diff -upr xnp2-0.86.orig/bios/bios1f.c xnp2-0.86/bios/bios1f.c
+--- xnp2-0.86.orig/bios/bios1f.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/bios/bios1f.c	2016-07-10 07:05:37.403140413 +0900
+@@ -36,9 +36,9 @@ static REG8 bios0x1f_90(void) {
+ 	leng = LOW16(CPU_CX - 1) + 1;
+ //	TRACEOUT(("move %.8x %.8x %.4x", srcbase + srcaddr, dstbase + dstaddr, leng));
+ 	do {
+-		l = min(leng, sizeof(work));
+-		l = min(l, srclimit - srcaddr);
+-		l = min(l, dstlimit - dstaddr);
++		l = xnp2min(leng, sizeof(work));
++		l = xnp2min(l, srclimit - srcaddr);
++		l = xnp2min(l, dstlimit - dstaddr);
+ 		if (!l) {
+ 			CPU_A20EN(FALSE);
+ 			goto p90_err2;
+diff -upr xnp2-0.86.orig/bios/bios.c xnp2-0.86/bios/bios.c
+--- xnp2-0.86.orig/bios/bios.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/bios/bios.c	2016-07-10 07:05:37.404140415 +0900
+@@ -139,7 +139,7 @@ static void bios_reinitbyswitch(void) {
+ 	}
+ 	mem[MEMB_BIOS_FLAG1] = biosflag;
+ 	extmem = pccore.extmem;
+-	extmem = min(extmem, 14);
++	extmem = xnp2min(extmem, 14);
+ 	mem[MEMB_EXPMMSZ] = (UINT8)(extmem << 3);
+ 	if (pccore.extmem >= 15) {
+ 		mem[0x0594] = pccore.extmem - 15;
+diff -upr xnp2-0.86.orig/bios/sxsibios.c xnp2-0.86/bios/sxsibios.c
+--- xnp2-0.86.orig/bios/sxsibios.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/bios/sxsibios.c	2016-07-10 07:05:37.404140415 +0900
+@@ -65,7 +65,7 @@ static REG8 sxsibios_write(UINT type, SX
+ 	if (!ret) {
+ 		addr = (CPU_ES << 4) + CPU_BP;
+ 		while(size) {
+-			r = min(size, sxsi->size);
++			r = xnp2min(size, sxsi->size);
+ 			MEML_READS(addr, work, r);
+ 			ret = sxsi_write(CPU_AL, pos, work, r);
+ 			if (ret >= 0x20) {
+@@ -96,7 +96,7 @@ static REG8 sxsibios_read(UINT type, SXS
+ 	if (!ret) {
+ 		addr = (CPU_ES << 4) + CPU_BP;
+ 		while(size) {
+-			r = min(size, sxsi->size);
++			r = xnp2min(size, sxsi->size);
+ 			ret = sxsi_read(CPU_AL, pos, work, r);
+ 			if (ret >= 0x20) {
+ 				break;
+diff -upr xnp2-0.86.orig/cbus/atapicmd.c xnp2-0.86/cbus/atapicmd.c
+--- xnp2-0.86.orig/cbus/atapicmd.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/cbus/atapicmd.c	2016-07-10 07:05:37.453140486 +0900
+@@ -50,7 +50,7 @@ static const UINT8 cdrom_inquiry[] = {
+ 
+ static void senddata(IDEDRV drv, UINT size, UINT limit) {
+ 
+-	size = min(size, limit);
++	size = xnp2min(size, limit);
+ 	drv->sc = IDEINTR_IO;
+ 	drv->cy = size;
+ 	drv->status &= ~(IDESTAT_BSY|IDESTAT_DMRD|IDESTAT_SERV|IDESTAT_CHK);
+@@ -432,7 +432,7 @@ static void atapi_cmd_mode_sense(IDEDRV
+ 		else {
+ 			ptr = defval_pagecode_01;
+ 		}
+-		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_01_SIZE));
++		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_01_SIZE));
+ 		cnt += PC_01_SIZE;
+ 		if (cnt > leng) {
+ 			goto length_exceeded;
+@@ -449,7 +449,7 @@ static void atapi_cmd_mode_sense(IDEDRV
+ 		else {
+ 			ptr = defval_pagecode_0d;
+ 		}
+-		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_0D_SIZE));
++		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_0D_SIZE));
+ 		cnt += PC_0D_SIZE;
+ 		if (cnt > leng) {
+ 			goto length_exceeded;
+@@ -466,7 +466,7 @@ static void atapi_cmd_mode_sense(IDEDRV
+ 		else {
+ 			ptr = defval_pagecode_0e;
+ 		}
+-		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_0E_SIZE));
++		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_0E_SIZE));
+ 		cnt += PC_0E_SIZE;
+ 		if (cnt > leng) {
+ 			goto length_exceeded;
+@@ -483,7 +483,7 @@ static void atapi_cmd_mode_sense(IDEDRV
+ 		else {
+ 			ptr = defval_pagecode_2a;
+ 		}
+-		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_2A_SIZE));
++		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_2A_SIZE));
+ 		cnt += PC_2A_SIZE;
+ 		if (cnt > leng) {
+ 			goto length_exceeded;
+diff -upr xnp2-0.86.orig/cbus/ideio.c xnp2-0.86/cbus/ideio.c
+--- xnp2-0.86.orig/cbus/ideio.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/cbus/ideio.c	2016-07-10 07:05:37.453140486 +0900
+@@ -936,7 +936,7 @@ const UINT8	*ptr;
+ 		return(FAILURE);
+ 	}
+ 	while(count) {
+-		r = min(count, drv->dabufrem);
++		r = xnp2min(count, drv->dabufrem);
+ 		if (r) {
+ 			count -= r;
+ 			ptr = drv->dabuf + 2352 - (drv->dabufrem * 4);
+diff -upr xnp2-0.86.orig/common/bmpdata.c xnp2-0.86/common/bmpdata.c
+--- xnp2-0.86.orig/common/bmpdata.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/common/bmpdata.c	2016-07-10 07:05:37.404140415 +0900
+@@ -40,7 +40,7 @@ UINT bmpdata_sethead(BMPFILE *bf, const
+ 	bit = LOADINTELWORD(bi->biBitCount);
+ 	if (bit < 8) {
+ 		pal = LOADINTELDWORD(bi->biClrUsed);
+-		pal = min(pal, (UINT)(1 << bit));
++		pal = xnp2min(pal, (UINT)(1 << bit));
+ 		ret += pal * 4;
+ 	}
+ 	if (bf) {
+@@ -156,7 +156,7 @@ UINT8 *bmpdata_lzx(int level, int dstsiz
+ 			tmp |= *dat++;
+ 			pos = -1 - (tmp >> level);
+ 			leng = (tmp & mask) + 1;
+-			leng = min(leng, dstsize);
++			leng = xnp2min(leng, dstsize);
+ 			dstsize -= leng;
+ 			while(leng--) {
+ 				*ptr = *(ptr + pos);
+diff -upr xnp2-0.86.orig/common/profile.c xnp2-0.86/common/profile.c
+--- xnp2-0.86.orig/common/profile.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/common/profile.c	2016-07-10 07:05:37.404140415 +0900
+@@ -755,7 +755,7 @@ BRESULT profile_read(const OEMCHAR *lpAp
+ 	}
+ 	else
+ 	{
+-		nSize = min(nSize, pfp.cchString + 1);
++		nSize = xnp2min(nSize, pfp.cchString + 1);
+ 		milstr_ncpy(lpReturnedString, pfp.lpString, nSize);
+ 		return SUCCESS;
+ 	}
+@@ -781,7 +781,7 @@ int profile_readint(const OEMCHAR *lpApp
+ 	}
+ 	else
+ 	{
+-		nSize = min(NELEMENTS(szBuffer), pfp.cchString + 1);
++		nSize = xnp2min(NELEMENTS(szBuffer), pfp.cchString + 1);
+ 		milstr_ncpy(szBuffer, pfp.lpString, nSize);
+ 		return (int)milstr_solveINT(szBuffer);
+ 	}
+diff -upr xnp2-0.86.orig/common/rect.c xnp2-0.86/common/rect.c
+--- xnp2-0.86.orig/common/rect.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/common/rect.c	2016-07-10 07:05:37.404140415 +0900
+@@ -45,7 +45,7 @@ void rect_enumout(const RECT_T *tag, con
+ 	if ((tag != NULL) && (base != NULL) && (outcb != NULL)) {
+ 		// base.top -> tag.top
+ 		rect.top = base->top;
+-		rect.bottom = min(tag->top, base->bottom);
++		rect.bottom = xnp2min(tag->top, base->bottom);
+ 		if (rect.top < rect.bottom) {
+ 			rect.left = base->left;
+ 			rect.right = base->right;
+@@ -54,14 +54,14 @@ void rect_enumout(const RECT_T *tag, con
+ 		}
+ 
+ 		// -> tag.bottom
+-		rect.bottom = min(tag->bottom, base->bottom);
++		rect.bottom = xnp2min(tag->bottom, base->bottom);
+ 		if (rect.top < rect.bottom) {
+ 			rect.left = base->left;
+-			rect.right = min(tag->left, base->right);
++			rect.right = xnp2min(tag->left, base->right);
+ 			if (rect.left < rect.right) {
+ 				outcb(arg, &rect);
+ 			}
+-			rect.left = max(tag->right, base->left);
++			rect.left = xnp2max(tag->right, base->left);
+ 			rect.right = base->right;
+ 			if (rect.left < rect.right) {
+ 				outcb(arg, &rect);
+diff -upr xnp2-0.86.orig/common/textfile.c xnp2-0.86/common/textfile.c
+--- xnp2-0.86.orig/common/textfile.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/common/textfile.c	2016-07-10 07:05:37.404140415 +0900
+@@ -283,7 +283,7 @@ const UINT8	*p;
+ 	ret = SUCCESS;
+ 	p = (UINT8 *)buffer;
+ 	while(size) {
+-		wsize = min(size, tf->bufrem);
++		wsize = xnp2min(size, tf->bufrem);
+ 		if (wsize) {
+ 			CopyMemory(tf->buf + tf->bufpos, p, wsize);
+ 			p += wsize;
+@@ -310,7 +310,7 @@ const UINT8	*p;
+ 	ret = SUCCESS;
+ 	p = (UINT8 *)buffer;
+ 	while(size) {
+-		wsize = min(size, tf->bufrem);
++		wsize = xnp2min(size, tf->bufrem);
+ 		if (wsize) {
+ 			q = tf->buf + (tf->bufpos * sizeof(UINT16));
+ 			CopyMemory(q, p, wsize * sizeof(UINT16));
+diff -upr xnp2-0.86.orig/common/wavefile.c xnp2-0.86/common/wavefile.c
+--- xnp2-0.86.orig/common/wavefile.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/common/wavefile.c	2016-07-10 07:05:37.404140415 +0900
+@@ -225,7 +225,7 @@ UINT wavefile_write(WAVEFILEH hWave, con
+ 	}
+ 	while (cbBuffer)
+ 	{
+-		UINT nSize = min(hWave->nRemain, cbBuffer);
++		UINT nSize = xnp2min(hWave->nRemain, cbBuffer);
+ 		memcpy(hWave->lpCurrent, lpBuffer, nSize);
+ 		lpBuffer = ((UINT8 *)lpBuffer) + nSize;
+ 		cbBuffer -= nSize;
+diff -upr xnp2-0.86.orig/debugsub386.c xnp2-0.86/debugsub386.c
+--- xnp2-0.86.orig/debugsub386.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/debugsub386.c	2016-07-10 07:14:30.432914009 +0900
+@@ -128,14 +128,14 @@ void debugwriteseg(const OEMCHAR *fname,
+ 	if (limit <= addr) {
+ 		return;
+ 	}
+-	size = min(limit - addr, size - 1) + 1;
++	size = xnp2min(limit - addr, size - 1) + 1;
+ 	fh = file_create_c(fname);
+ 	if (fh == FILEH_INVALID) {
+ 		return;
+ 	}
+ 	addr += sd->u.seg.segbase;
+ 	while(size) {
+-		limit = min(size, sizeof(buf));
++		limit = xnp2min(size, sizeof(buf));
+ 		MEML_READS(addr, buf, limit);
+ 		file_write(fh, buf, limit);
+ 		addr += limit;
+diff -upr xnp2-0.86.orig/debugsub.c xnp2-0.86/debugsub.c
+--- xnp2-0.86.orig/debugsub.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/debugsub.c	2016-07-10 07:05:37.405140416 +0900
+@@ -122,10 +122,10 @@ static void writeseg(const OEMCHAR *fnam
+ 	if (fh == FILEH_INVALID) {
+ 		return;
+ 	}
+-	limit = min(limit, 0xffff);
++	limit = xnp2min(limit, 0xffff);
+ 	limit++;
+ 	while(limit) {
+-		size = min(limit, sizeof(buf));
++		size = xnp2min(limit, sizeof(buf));
+ 		MEML_READS(addr, buf, size);
+ 		file_write(fh, buf, size);
+ 		addr += size;
+diff -upr xnp2-0.86.orig/fdd/newdisk.c xnp2-0.86/fdd/newdisk.c
+--- xnp2-0.86.orig/fdd/newdisk.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/fdd/newdisk.c	2016-07-10 07:05:37.405140416 +0900
+@@ -42,7 +42,7 @@ static BRESULT writezero(FILEH fh, UINT
+ 
+ 	ZeroMemory(work, sizeof(work));
+ 	while(size) {
+-		wsize = min(size, sizeof(work));
++		wsize = xnp2min(size, sizeof(work));
+ 		if (file_write(fh, work, wsize) != wsize) {
+ 			return(FAILURE);
+ 		}
+@@ -69,7 +69,7 @@ static BRESULT writehddipl(FILEH fh, UIN
+ 		tsize -= sizeof(work);
+ 		ZeroMemory(work, sizeof(work));
+ 		while(tsize) {
+-			size = min(tsize, sizeof(work));
++			size = xnp2min(tsize, sizeof(work));
+ 			tsize -= size;
+ 			if (file_write(fh, work, size) != size) {
+ 				return(FAILURE);
+diff -upr xnp2-0.86.orig/fdd/sxsicd.c xnp2-0.86/fdd/sxsicd.c
+--- xnp2-0.86.orig/fdd/sxsicd.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/fdd/sxsicd.c	2016-07-10 07:05:37.405140416 +0900
+@@ -69,7 +69,7 @@ static REG8 sec2048_read(SXSIDEV sxsi, l
+ 		return(0xd0);
+ 	}
+ 	while(size) {
+-		rsize = min(size, 2048);
++		rsize = xnp2min(size, 2048);
+ 		CPU_REMCLOCK -= rsize;
+ 		if (file_read(fh, buf, rsize) != rsize) {
+ 			return(0xd0);
+@@ -132,7 +132,7 @@ static REG8 sec2352_read(SXSIDEV sxsi, l
+ 		if (file_seek(fh, fpos, FSEEK_SET) != fpos) {
+ 			return(0xd0);
+ 		}
+-		rsize = min(size, 2048);
++		rsize = xnp2min(size, 2048);
+ 		CPU_REMCLOCK -= rsize;
+ 		if (file_read(fh, buf, rsize) != rsize) {
+ 			return(0xd0);
+@@ -218,7 +218,7 @@ static BRESULT openimg(SXSIDEV sxsi, con
+ 	cdinfo->fh = fh;
+ 	cdinfo->type = type;
+ 	if ((trk != NULL) && (trks != 0)) {
+-		trks = min(trks, NELEMENTS(cdinfo->trk) - 1);
++		trks = xnp2min(trks, NELEMENTS(cdinfo->trk) - 1);
+ 		CopyMemory(cdinfo->trk, trk, trks * sizeof(_CDTRK));
+ 	}
+ 	else {
+diff -upr xnp2-0.86.orig/fdd/sxsihdd.c xnp2-0.86/fdd/sxsihdd.c
+--- xnp2-0.86.orig/fdd/sxsihdd.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/fdd/sxsihdd.c	2016-07-10 07:05:37.405140416 +0900
+@@ -54,7 +54,7 @@ static REG8 hdd_read(SXSIDEV sxsi, long
+ 		return(0xd0);
+ 	}
+ 	while(size) {
+-		rsize = min(size, sxsi->size);
++		rsize = xnp2min(size, sxsi->size);
+ 		CPU_REMCLOCK -= rsize;
+ 		if (file_read(fh, buf, rsize) != rsize) {
+ 			return(0xd0);
+@@ -84,7 +84,7 @@ static REG8 hdd_write(SXSIDEV sxsi, long
+ 		return(0xd0);
+ 	}
+ 	while(size) {
+-		wsize = min(size, sxsi->size);
++		wsize = xnp2min(size, sxsi->size);
+ 		CPU_REMCLOCK -= wsize;
+ 		if (file_write(fh, buf, wsize) != wsize) {
+ 			return(0x70);
+@@ -120,7 +120,7 @@ static REG8 hdd_format(SXSIDEV sxsi, lon
+ 	for (i=0; i<sxsi->sectors; i++) {
+ 		size = sxsi->size;
+ 		while(size) {
+-			wsize = min(size, sizeof(work));
++			wsize = xnp2min(size, sizeof(work));
+ 			size -= wsize;
+ 			CPU_REMCLOCK -= wsize;
+ 			if (file_write(fh, work, wsize) != wsize) {
+diff -upr xnp2-0.86.orig/font/fontmake.c xnp2-0.86/font/fontmake.c
+--- xnp2-0.86.orig/font/fontmake.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/font/fontmake.c	2016-07-10 07:05:37.405140416 +0900
+@@ -156,8 +156,8 @@ const UINT8	*p;
+ 		dat = fontmng_get(fnt, work);
+ #endif
+ 		if (dat) {
+-			width = min(dat->width, 8);
+-			height = min(dat->height, 16);
++			width = xnp2min(dat->width, 8);
++			height = xnp2min(dat->height, 16);
+ 			p = (UINT8 *)(dat + 1);
+ 			q = ptr;
+ 			while(height > 0) {
+@@ -231,8 +231,8 @@ const UINT8	*p;
+ 				dat = fontmng_get(fnt, work);
+ #endif
+ 				if (dat) {
+-					width = min(dat->width, 16);
+-					height = min(dat->height, 16);
++					width = xnp2min(dat->width, 16);
++					height = xnp2min(dat->height, 16);
+ 					p = (UINT8 *)(dat + 1);
+ 					q = ptr;
+ 					while(height > 0) {
+diff -upr xnp2-0.86.orig/generic/cmndraw.c xnp2-0.86/generic/cmndraw.c
+--- xnp2-0.86.orig/generic/cmndraw.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/generic/cmndraw.c	2016-07-10 07:05:37.448140478 +0900
+@@ -340,7 +340,7 @@ const UINT8		*palptr;
+ 		(bmpdata_getinfo(bi, &inf) != SUCCESS) || (inf.bpp != 4)) {
+ 		return(FAILURE);
+ 	}
+-	pals = min(LOADINTELDWORD(bi->biClrUsed), 16);
++	pals = xnp2min(LOADINTELDWORD(bi->biClrUsed), 16);
+ 
+ 	src = (UINT8 *)bf + (LOADINTELDWORD(bf->bfOffBits));
+ 	bmpalign = bmpdata_getalign(bi);
+diff -upr xnp2-0.86.orig/generic/hostdrv.c xnp2-0.86/generic/hostdrv.c
+--- xnp2-0.86.orig/generic/hostdrv.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/generic/hostdrv.c	2016-07-10 07:05:37.449140480 +0900
+@@ -355,7 +355,7 @@ static BRESULT read_data(UINT num, UINT3
+ 		return(FAILURE);
+ 	}
+ 	while(size) {
+-		r = min(size, sizeof(work));
++		r = xnp2min(size, sizeof(work));
+ 		if (file_read(fh, work, r) != r) {
+ 			return(FAILURE);
+ 		}
+@@ -386,7 +386,7 @@ static BRESULT write_data(UINT num, UINT
+ 	}
+ 	else {
+ 		do {
+-			r = min(size, sizeof(work));
++			r = xnp2min(size, sizeof(work));
+ 			MEMR_READS(seg, off, work, r);
+ 			if (file_write(fh, work, r) != r) {
+ 				return(FAILURE);
+diff -upr xnp2-0.86.orig/generic/keydisp.c xnp2-0.86/generic/keydisp.c
+--- xnp2-0.86.orig/generic/keydisp.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/generic/keydisp.c	2016-07-10 07:05:37.449140480 +0900
+@@ -371,7 +371,7 @@ static UINT8 GetOpnaNote(const OPNACTL *
+ 	}
+ 
+ 	nKey += nOct * 12;
+-	return (int)(min(nKey, 127));
++	return (int)(xnp2min(nKey, 127));
+ }
+ 
+ static void opnakeyoff(KEYDISP *keydisp, OPNACTL *k, UINT nChannel)
+@@ -540,7 +540,7 @@ static UINT8 GetPSGNote(const PSGCTL *k,
+ 	{
+ 	}
+ 	nKey += nOct * 12;
+-	return (int)(min(nKey, 127));
++	return (int)(xnp2min(nKey, 127));
+ }
+ 
+ static void psgmix(KEYDISP *keydisp, PSGCTL *k)
+@@ -704,7 +704,7 @@ static UINT8 GetOpl3Note(const OPL3CTL *
+ 	}
+ 
+ 	nKey += nOct * 12;
+-	return (int)(min(nKey, 127));
++	return (int)(xnp2min(nKey, 127));
+ }
+ 
+ static void opl3keyoff(KEYDISP *keydisp, OPL3CTL *k, UINT nChannel)
+@@ -969,7 +969,7 @@ static UINT getdispkeys(const KEYDISP *k
+ 			keys = 0;
+ 			break;
+ 	}
+-	return min(keys, KEYDISP_CHMAX);
++	return xnp2min(keys, KEYDISP_CHMAX);
+ }
+ 
+ static void clearrect(CMNVRAM *vram, int x, int y, int cx, int cy)
+@@ -1295,7 +1295,7 @@ BOOL keydisp_paint(CMNVRAM *vram, BOOL r
+ 	}
+ 	vram->ptr += vram->xalign + vram->yalign;
+ 	keys = (vram->height - 1) / KEYDISP_KEYCY;
+-	keys = min(keys, getdispkeys(&s_keydisp));
++	keys = xnp2min(keys, getdispkeys(&s_keydisp));
+ 	for (i = 0, p = s_keydisp.ch; i < keys; i++, p++)
+ 	{
+ 		draw |= draw1ch(vram, s_keydisp.framepast, p);
+diff -upr xnp2-0.86.orig/generic/np2info.c xnp2-0.86/generic/np2info.c
+--- xnp2-0.86.orig/generic/np2info.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/generic/np2info.c	2016-07-10 07:07:16.664284468 +0900
+@@ -49,7 +49,7 @@ static void info_cpu(OEMCHAR *str, int m
+ 	UINT	family;
+ 
+ #if defined(CPU_FAMILY)
+-	family = min(CPU_FAMILY, 6);
++	family = xnp2min(CPU_FAMILY, 6);
+ #else
+ 	family = (CPU_TYPE & CPUTYPE_V30)?1:2;
+ #endif
+diff -upr xnp2-0.86.orig/i286c/i286c.c xnp2-0.86/i286c/i286c.c
+--- xnp2-0.86.orig/i286c/i286c.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/i286c/i286c.c	2016-07-10 07:05:37.449140480 +0900
+@@ -196,7 +196,7 @@ void i286c_setextsize(UINT32 size) {
+ 			CPU_EXTMEM = extmem;
+ 			CPU_EXTMEMSIZE = size;
+ 			CPU_EXTMEMBASE = CPU_EXTMEM - 0x100000;
+-			CPU_EXTLIMIT16 = min(size + 0x100000, 0xf00000);
++			CPU_EXTLIMIT16 = xnp2min(size + 0x100000, 0xf00000);
+ #if defined(CPU_EXTLIMIT)
+ 			CPU_EXTLIMIT = size + 0x100000;
+ #endif
+diff -upr xnp2-0.86.orig/i286c/v30patch.c xnp2-0.86/i286c/v30patch.c
+--- xnp2-0.86.orig/i286c/v30patch.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/i286c/v30patch.c	2016-07-10 07:05:37.449140480 +0900
+@@ -253,7 +253,7 @@ I286FN v30shift_ea8_data8(void) {			// C
+ 				}
+ 			}
+ 			else {
+-				cl = max(cl, 9);
++				cl = xnp2max(cl, 9);
+ 			}
+ 			sft_e8cl_table[(op >> 3) & 7](madr, cl);
+ 			return;
+@@ -271,7 +271,7 @@ I286FN v30shift_ea8_data8(void) {			// C
+ 		}
+ 	}
+ 	else {
+-		cl = max(cl, 9);
++		cl = xnp2max(cl, 9);
+ 	}
+ 	sft_r8cl_table[(op >> 3) & 7](out, cl);
+ }
+@@ -303,7 +303,7 @@ I286FN v30shift_ea16_data8(void) {			//
+ 				}
+ 			}
+ 			else {								// shift
+-				cl = max(cl, 17);
++				cl = xnp2max(cl, 17);
+ 			}
+ 			sft_e16cl_table[(op >> 3) & 7](madr, cl);
+ 			return;
+@@ -321,7 +321,7 @@ I286FN v30shift_ea16_data8(void) {			//
+ 		}
+ 	}
+ 	else {								// shift
+-		cl = max(cl, 17);
++		cl = xnp2max(cl, 17);
+ 	}
+ 	sft_r16cl_table[(op >> 3) & 7](out, cl);
+ }
+@@ -353,7 +353,7 @@ I286FN v30shift_ea8_cl(void) {				// D2:
+ 				}
+ 			}
+ 			else {
+-				cl = max(cl, 9);
++				cl = xnp2max(cl, 9);
+ 			}
+ 			sft_e8cl_table[(op >> 3) & 7](madr, cl);
+ 			return;
+@@ -371,7 +371,7 @@ I286FN v30shift_ea8_cl(void) {				// D2:
+ 		}
+ 	}
+ 	else {
+-		cl = max(cl, 9);
++		cl = xnp2max(cl, 9);
+ 	}
+ 	sft_r8cl_table[(op >> 3) & 7](out, cl);
+ }
+@@ -403,7 +403,7 @@ I286FN v30shift_ea16_cl(void) {				// D3
+ 				}
+ 			}
+ 			else {								// shift
+-				cl = max(cl, 17);
++				cl = xnp2max(cl, 17);
+ 			}
+ 			sft_e16cl_table[(op >> 3) & 7](madr, cl);
+ 			return;
+@@ -421,7 +421,7 @@ I286FN v30shift_ea16_cl(void) {				// D3
+ 		}
+ 	}
+ 	else {								// shift
+-		cl = max(cl, 17);
++		cl = xnp2max(cl, 17);
+ 	}
+ 	sft_r16cl_table[(op >> 3) & 7](out, cl);
+ }
+diff -upr xnp2-0.86.orig/i386c/cpumem.c xnp2-0.86/i386c/cpumem.c
+--- xnp2-0.86.orig/i386c/cpumem.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/i386c/cpumem.c	2016-07-10 07:07:16.666284471 +0900
+@@ -625,7 +625,7 @@ void MEMCALL meml_reads(UINT32 address,
+ 	else {
+ 		while(leng) {
+ 			size = 0x1000 - (address & 0xfff);
+-			size = min(size, leng);
++			size = xnp2min(size, leng);
+ 			memp_reads(physicaladdr(address, FALSE), dat, size);
+ 			address += size;
+ 			dat = ((UINT8 *)dat) + size;
+@@ -644,7 +644,7 @@ void MEMCALL meml_writes(UINT32 address,
+ 	else {
+ 		while(leng) {
+ 			size = 0x1000 - (address & 0xfff);
+-			size = min(size, leng);
++			size = xnp2min(size, leng);
+ 			memp_writes(physicaladdr(address, TRUE), dat, size);
+ 			address += size;
+ 			dat = ((UINT8 *)dat) + size;
+@@ -717,10 +717,10 @@ void MEMCALL memr_reads(UINT seg, UINT o
+ 		off = LOW16(off);
+ 		addr = (seg << 4) + off;
+ 		rem = 0x10000 - off;
+-		size = min(leng, rem);
++		size = xnp2min(leng, rem);
+ 		if (CPU_STAT_PAGING) {
+ 			rem = 0x1000 - (addr & 0xfff);
+-			size = min(size, rem);
++			size = xnp2min(size, rem);
+ 			addr = physicaladdr(addr, FALSE);
+ 		}
+ 		memp_reads(addr, dat, size);
+@@ -740,10 +740,10 @@ void MEMCALL memr_writes(UINT seg, UINT
+ 		off = LOW16(off);
+ 		addr = (seg << 4) + off;
+ 		rem = 0x10000 - off;
+-		size = min(leng, rem);
++		size = xnp2min(leng, rem);
+ 		if (CPU_STAT_PAGING) {
+ 			rem = 0x1000 - (addr & 0xfff);
+-			size = min(size, rem);
++			size = xnp2min(size, rem);
+ 			addr = physicaladdr(addr, TRUE);
+ 		}
+ 		memp_writes(addr, dat, size);
+diff -upr xnp2-0.86.orig/i386c/ia32/ia32.c xnp2-0.86/i386c/ia32/ia32.c
+--- xnp2-0.86.orig/i386c/ia32/ia32.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/i386c/ia32/ia32.c	2016-07-10 07:14:30.432914009 +0900
+@@ -93,7 +93,7 @@ ia32_setextsize(UINT32 size)
+ 			CPU_EXTMEM = extmem;
+ 			CPU_EXTMEMSIZE = size;
+ 			CPU_EXTMEMBASE = CPU_EXTMEM - 0x100000;
+-			CPU_EXTLIMIT16 = min(size + 0x100000, 0xf00000);
++			CPU_EXTLIMIT16 = xnp2min(size + 0x100000, 0xf00000);
+ 			CPU_EXTLIMIT = size + 0x100000;
+ 		}
+ 		else {
+diff -upr xnp2-0.86.orig/io/dmac.c xnp2-0.86/io/dmac.c
+--- xnp2-0.86.orig/io/dmac.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/io/dmac.c	2016-07-10 07:05:37.450140481 +0900
+@@ -90,7 +90,7 @@ UINT dmac_getdatas(DMACH dmach, UINT8 *b
+ 	UINT32	addr;
+ 	UINT	i;
+ 
+-	leng = min(dmach->leng.w, size);
++	leng = xnp2min(dmach->leng.w, size);
+ 	if (leng) {
+ 		addr = dmach->adrs.d;					// + mask
+ 		if (!(dmach->mode & 0x20)) {			// dir +
+diff -upr xnp2-0.86.orig/keystat.c xnp2-0.86/keystat.c
+--- xnp2-0.86.orig/keystat.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/keystat.c	2016-07-10 07:05:37.450140481 +0900
+@@ -61,11 +61,11 @@ void keystat_tblset(REG8 ref, const UINT
+ 
+ 	if ((ref >= NKEY_USER) && (ref < (NKEY_USER + NKEY_USERKEYS))) {
+ 		nkey = (NKEYM *)(nkeytbl.user + (ref - NKEY_USER));
+-		cnt = min(cnt, 15);
++		cnt = xnp2min(cnt, 15);
+ 	}
+ 	else if (ref < NKEY_SYSTEM) {
+ 		nkey = (NKEYM *)(nkeytbl.key + ref);
+-		cnt = min(cnt, 3);
++		cnt = xnp2min(cnt, 3);
+ 	}
+ 	else {
+ 		return;
+diff -upr xnp2-0.86.orig/lio/gline.c xnp2-0.86/lio/gline.c
+--- xnp2-0.86.orig/lio/gline.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/lio/gline.c	2016-07-10 07:05:37.450140481 +0900
+@@ -126,7 +126,7 @@ static void gline(const _GLIO *lio, cons
+ 	if (d2 < 0) {
+ 		d2 = 0 - d2;
+ 	}
+-	d1 = max(d1, d2) & 15;
++	d1 = xnp2max(d1, d2) & 15;
+ 	pat = (UINT16)((pat >> d1) | (pat << (16 - d1)));
+ 
+ 	csrw = (y1 * 40) + (x1 >> 4) + ((x1 & 0xf) << 20);
+@@ -213,10 +213,10 @@ static void gbox(const _GLIO *lio, const
+ 		(y1 > lio->draw.y2) || (y2 < lio->draw.y1)) {
+ 		return;
+ 	}
+-	x1 = max(x1, lio->draw.x1);
+-	y1 = max(y1, lio->draw.y1);
+-	x2 = min(x2, lio->draw.x2);
+-	y2 = min(y2, lio->draw.y2);
++	x1 = xnp2max(x1, lio->draw.x1);
++	y1 = xnp2max(y1, lio->draw.y1);
++	x2 = xnp2min(x2, lio->draw.x2);
++	y2 = xnp2min(y2, lio->draw.y2);
+ 
+ 	csrw = 0;
+ 	if (lio->draw.flag & LIODRAW_UPPER) {
+diff -upr xnp2-0.86.orig/lio/lio.c xnp2-0.86/lio/lio.c
+--- xnp2-0.86.orig/lio/lio.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/lio/lio.c	2016-07-10 07:05:37.450140481 +0900
+@@ -148,13 +148,13 @@ void lio_updatedraw(GLIO lio) {
+ 	lio->draw.palmax = 1 << colorbit;
+ 
+ 	tmp = (SINT16)LOADINTELWORD(lio->work.viewx1);
+-	lio->draw.x1 = max(tmp, 0);
++	lio->draw.x1 = xnp2max(tmp, 0);
+ 	tmp = (SINT16)LOADINTELWORD(lio->work.viewy1);
+-	lio->draw.y1 = max(tmp, 0);
++	lio->draw.y1 = xnp2max(tmp, 0);
+ 	tmp = (SINT16)LOADINTELWORD(lio->work.viewx2);
+-	lio->draw.x2 = min(tmp, 639);
++	lio->draw.x2 = xnp2min(tmp, 639);
+ 	tmp = (SINT16)LOADINTELWORD(lio->work.viewy2);
+-	lio->draw.y2 = min(tmp, maxline);
++	lio->draw.y2 = xnp2min(tmp, maxline);
+ 	if (!gdcs.access) {
+ 		lio->draw.base = 0;
+ 		lio->draw.bank = 0;
+diff -upr xnp2-0.86.orig/pccore.c xnp2-0.86/pccore.c
+--- xnp2-0.86.orig/pccore.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/pccore.c	2016-07-10 07:05:37.450140481 +0900
+@@ -171,9 +171,9 @@ static void pccore_set(const NP2CFG *pCo
+ 	{
+ 		extsize = np2cfg.EXTMEM;
+ #if defined(CPUCORE_IA32)
+-		extsize = min(extsize, 63);
++		extsize = xnp2min(extsize, 63);
+ #else
+-		extsize = min(extsize, 13);
++		extsize = xnp2min(extsize, 13);
+ #endif
+ 	}
+ 	pccore.extmem = extsize;
+diff -upr xnp2-0.86.orig/sound/adpcmg.c xnp2-0.86/sound/adpcmg.c
+--- xnp2-0.86.orig/sound/adpcmg.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/adpcmg.c	2016-07-10 07:05:37.450140481 +0900
+@@ -265,7 +265,7 @@ void SOUNDCALL adpcm_getpcm(ADPCM ad, SI
+ 					if (ad->play == 0) {
+ 						goto adpcmstop;
+ 					}
+-					samp += ad->out0 * min(remain, ad->pertim);
++					samp += ad->out0 * xnp2min(remain, ad->pertim);
+ 					remain -= ad->pertim;
+ 				} while(remain > 0);
+ 			}
+diff -upr xnp2-0.86.orig/sound/beepg.c xnp2-0.86/sound/beepg.c
+--- xnp2-0.86.orig/sound/beepg.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/beepg.c	2016-07-10 07:05:37.450140481 +0900
+@@ -84,7 +84,7 @@ const BPEVENT	*bev;
+ 	do {
+ 		if (clk >= (1 << 16)) {
+ 			r = clk >> 16;
+-			r = min(r, count);
++			r = xnp2min(r, count);
+ 			clk -= r << 16;
+ 			count -= r;
+ 			if (bp->lastenable) {
+diff -upr xnp2-0.86.orig/sound/cs4231c.c xnp2-0.86/sound/cs4231c.c
+--- xnp2-0.86.orig/sound/cs4231c.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/cs4231c.c	2016-07-10 07:05:37.450140481 +0900
+@@ -86,7 +86,7 @@ void cs4231_dma(NEVENTITEM item) {
+ 			if (cs4231.bufsize > cs4231.bufdatas) {
+ 				rem = cs4231.bufsize - cs4231.bufdatas;
+ 				pos = (cs4231.bufpos + cs4231.bufdatas) & CS4231_BUFMASK;
+-				size = min(rem, CS4231_BUFFERS - pos);
++				size = xnp2min(rem, CS4231_BUFFERS - pos);
+ 				r = dmac_getdatas(dmach, cs4231.buffer + pos, size);
+ 				rem -= r;
+ 				cs4231.bufdatas += r;
+@@ -167,7 +167,7 @@ static void setdataalign(void) {
+ 	step = (0 - cs4231.bufpos) & 3;
+ 	if (step) {
+ 		cs4231.bufpos += step;
+-		cs4231.bufdatas -= min(step, cs4231.bufdatas);
++		cs4231.bufdatas -= xnp2min(step, cs4231.bufdatas);
+ 	}
+ 	cs4231.bufdatas &= ~3;
+ }
+diff -upr xnp2-0.86.orig/sound/cs4231g.c xnp2-0.86/sound/cs4231g.c
+--- xnp2-0.86.orig/sound/cs4231g.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/cs4231g.c	2016-07-10 07:05:37.451140483 +0900
+@@ -43,7 +43,7 @@ const UINT8	*ptr2;
+ 		pos12 += cs->step12;
+ 	} while(--count);
+ 
+-	leng = min(leng, (pos12 >> 12));
++	leng = xnp2min(leng, (pos12 >> 12));
+ 	cs->bufdatas -= (leng << 0);
+ 	cs->bufpos += (leng << 0);
+ 	cs->pos12 = pos12 & ((1 << 12) - 1);
+@@ -87,7 +87,7 @@ const UINT8	*ptr2;
+ 		pos12 += cs->step12;
+ 	} while(--count);
+ 
+-	leng = min(leng, (pos12 >> 12));
++	leng = xnp2min(leng, (pos12 >> 12));
+ 	cs->bufdatas -= (leng << 1);
+ 	cs->bufpos += (leng << 1);
+ 	cs->pos12 = pos12 & ((1 << 12) - 1);
+@@ -128,7 +128,7 @@ const UINT8	*ptr2;
+ 		pos12 += cs->step12;
+ 	} while(--count);
+ 
+-	leng = min(leng, (pos12 >> 12));
++	leng = xnp2min(leng, (pos12 >> 12));
+ 	cs->bufdatas -= (leng << 1);
+ 	cs->bufpos += (leng << 1);
+ 	cs->pos12 = pos12 & ((1 << 12) - 1);
+@@ -172,7 +172,7 @@ const UINT8	*ptr2;
+ 		pos12 += cs->step12;
+ 	} while(--count);
+ 
+-	leng = min(leng, (pos12 >> 12));
++	leng = xnp2min(leng, (pos12 >> 12));
+ 	cs->bufdatas -= (leng << 2);
+ 	cs->bufpos += (leng << 2);
+ 	cs->pos12 = pos12 & ((1 << 12) - 1);
+diff -upr xnp2-0.86.orig/sound/getsnd/getsndmn.mcr xnp2-0.86/sound/getsnd/getsndmn.mcr
+--- xnp2-0.86.orig/sound/getsnd/getsndmn.mcr	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/getsnd/getsndmn.mcr	2016-07-10 07:05:37.451140483 +0900
+@@ -34,7 +34,7 @@ static _SMP_OUT *FUNC_NOR(GETSND trk, _S
+ 	_SMP_IN	*samp;
+ 	UINT	size;
+ 
+-	size = min(trk->remain, (UINT)(pcmterm - pcm));
++	size = xnp2min(trk->remain, (UINT)(pcmterm - pcm));
+ 	trk->remain -= size;
+ 	samp = (_SMP_IN *)trk->buf;
+ 	do {
+diff -upr xnp2-0.86.orig/sound/getsnd/getsndst.mcr xnp2-0.86/sound/getsnd/getsndst.mcr
+--- xnp2-0.86.orig/sound/getsnd/getsndst.mcr	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/getsnd/getsndst.mcr	2016-07-10 07:05:37.451140483 +0900
+@@ -34,7 +34,7 @@ static _SMP_OUT *FUNC_NOR(GETSND trk, _S
+ 	_SMP_IN	*samp;
+ 	UINT	size;
+ 
+-	size = min(trk->remain, (UINT)((pcmterm - pcm) / 2));
++	size = xnp2min(trk->remain, (UINT)((pcmterm - pcm) / 2));
+ 	trk->remain -= size;
+ 	samp = (_SMP_IN *)trk->buf;
+ 	do {
+diff -upr xnp2-0.86.orig/sound/getsnd/getwave.c xnp2-0.86/sound/getsnd/getwave.c
+--- xnp2-0.86.orig/sound/getsnd/getwave.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/getsnd/getwave.c	2016-07-10 07:05:37.451140483 +0900
+@@ -75,7 +75,7 @@ static UINT pcm_dec(GETSND snd, void *ds
+ 
+ 	UINT	size;
+ 
+-	size = min(snd->blocksize, snd->datsize);
++	size = xnp2min(snd->blocksize, snd->datsize);
+ 	if (size) {
+ 		CopyMemory(dst, snd->datptr, size);
+ 		snd->datptr += size;
+@@ -91,7 +91,7 @@ static UINT pcm_dec(GETSND snd, UINT8 *d
+ 	UINT	cnt;
+ 	UINT8	*src;
+ 
+-	size = min(snd->blocksize, snd->datsize);
++	size = xnp2min(snd->blocksize, snd->datsize);
+ 	if (size) {
+ 		if (snd->bit == 16) {
+ 			cnt = size >> 1;
+@@ -164,7 +164,7 @@ static UINT msa_dec(GETSND snd, SINT16 *
+ 	SINT32		outdata;
+ 
+ 	buf = snd->datptr;						// ワーク使ってません。
+-	size = min(snd->datsize, snd->blocksize);
++	size = xnp2min(snd->datsize, snd->blocksize);
+ 	snd->datptr += size;
+ 	snd->datsize -= size;
+ 
+@@ -531,7 +531,7 @@ BRESULT getwave_open(GETSND snd, UINT8 *
+ 	ptr += pos;
+ 	size -= pos;
+ 	datasize = LOADINTELDWORD(head->size);
+-	size = min(size, datasize);
++	size = xnp2min(size, datasize);
+ 
+ 	switch(format) {
+ 		case 0x01:				// PCM
+diff -upr xnp2-0.86.orig/sound/pcmmix.c xnp2-0.86/sound/pcmmix.c
+--- xnp2-0.86.orig/sound/pcmmix.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/pcmmix.c	2016-07-10 07:05:37.451140483 +0900
+@@ -118,7 +118,7 @@ const SINT16	*s;
+ 			flag = t->flag;
+ 			vol = t->volume;
+ 			do {
+-				r = min(srem, drem);
++				r = xnp2min(srem, drem);
+ 				switch(flag & (PMIXFLAG_L | PMIXFLAG_R)) {
+ 					case PMIXFLAG_L:
+ 						for (j=0; j<r; j++) {
+diff -upr xnp2-0.86.orig/sound/psggeng.c xnp2-0.86/sound/psggeng.c
+--- xnp2-0.86.orig/sound/psggeng.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/psggeng.c	2016-07-10 07:05:37.451140483 +0900
+@@ -23,7 +23,7 @@ void SOUNDCALL psggen_getpcm(PSGGEN psg,
+ 	UINT	noise;
+ 
+ 	if ((psg->mixer & 0x3f) == 0) {
+-		count = min(count, psg->puchicount);
++		count = xnp2min(count, psg->puchicount);
+ 		psg->puchicount -= count;
+ 	}
+ 	if (count == 0) {
+diff -upr xnp2-0.86.orig/sound/sound.c xnp2-0.86/sound/sound.c
+--- xnp2-0.86.orig/sound/sound.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/sound.c	2016-07-10 07:05:37.451140483 +0900
+@@ -55,7 +55,7 @@ static void streamprepare(UINT samples)
+ 	CBTBL	*cb;
+ 	UINT	count;
+ 
+-	count = min(sndstream.remain, samples);
++	count = xnp2min(sndstream.remain, samples);
+ 	if (count) {
+ 		ZeroMemory(sndstream.ptr, count * 2 * sizeof(SINT32));
+ 		cb = sndstream.cb;
+@@ -133,7 +133,7 @@ static void streamfilewrite(UINT nSample
+ 
+ 	while (nSamples)
+ 	{
+-		nCount = min(nSamples, 512);
++		nCount = xnp2min(nSamples, 512);
+ 		memset(buf32, 0, nCount * 2 * sizeof(buf32[0]));
+ 		cb = sndstream.cb;
+ 		while (cb < sndstream.cbreg)
+@@ -141,7 +141,7 @@ static void streamfilewrite(UINT nSample
+ 			cb->cbfn(cb->hdl, buf32, nCount);
+ 			cb++;
+ 		}
+-		r = min(sndstream.remain, nCount);
++		r = xnp2min(sndstream.remain, nCount);
+ 		if (r)
+ 		{
+ 			memcpy(sndstream.ptr, buf32, r * 2 * sizeof(buf32[0]));
+@@ -179,7 +179,7 @@ static void filltailsample(UINT nCount)
+ 	SINT32 nSampleL;
+ 	SINT32 nSampleR;
+ 
+-	nCount = min(sndstream.remain, nCount);
++	nCount = xnp2min(sndstream.remain, nCount);
+ 	if (nCount)
+ 	{
+ 		ptr = sndstream.ptr;
+diff -upr xnp2-0.86.orig/sound/vermouth/midinst.c xnp2-0.86/sound/vermouth/midinst.c
+--- xnp2-0.86.orig/sound/vermouth/midinst.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/vermouth/midinst.c	2016-07-10 07:05:37.452140484 +0900
+@@ -398,7 +398,7 @@ const UINT8		*d;
+ 				if (sampdat < 0) {
+ 					sampdat *= -1;
+ 				}
+-				sampmax = max(sampmax, sampdat);
++				sampmax = xnp2max(sampmax, sampdat);
+ 			} while(--cnt);
+ 			layer->volume = 32768 * 128 / sampmax;
+ 		}
+diff -upr xnp2-0.86.orig/sound/vermouth/midiout.c xnp2-0.86/sound/vermouth/midiout.c
+--- xnp2-0.86.orig/sound/vermouth/midiout.c	2016-03-09 02:25:48.000000000 +0900
++++ xnp2-0.86/sound/vermouth/midiout.c	2016-07-10 07:05:37.452140484 +0900
+@@ -320,7 +320,7 @@ static void VERMOUTHCL key_on(MIDIHDL hd
+ 		if (!(v2->phase & (VOICE_ON | VOICE_REL))) {
+ 			vol = v2->envleft;
+ 			if ((v2->flag & VOICE_MIXMASK) == VOICE_MIXNORMAL) {
+-				vol = max(vol, v2->envright);
++				vol = xnp2max(vol, v2->envright);
+ 			}
+ 			if (volmin > vol) {
+ 				volmin = vol;
+@@ -716,7 +716,7 @@ static void VERMOUTHCL _allresetmidi(MID
+ 
+ VEXTERN UINT VEXPORT midiout_getver(char *string, UINT leng) {
+ 
+-	leng = min(leng, sizeof(vermouthver));
++	leng = xnp2min(leng, sizeof(vermouthver));
+ 	CopyMemory(string, vermouthver, leng);
+ 	return((MIDIOUT_VERSION << 8) | 0x00);
+ }
+@@ -729,8 +729,8 @@ VEXTERN MIDIHDL VEXPORT midiout_create(M
+ 	if (mod == NULL) {
+ 		return(NULL);
+ 	}
+-	worksize = min(worksize, 512U);
+-	worksize = max(worksize, 16384U);
++	worksize = xnp2min(worksize, 512U);
++	worksize = xnp2max(worksize, 16384U);
+ 	size = sizeof(_MIDIHDL);
+ 	size += sizeof(SINT32) * 2 * worksize;
+ 	size += sizeof(_SAMPLE) * worksize;
+@@ -1079,7 +1079,7 @@ static UINT	VERMOUTHCL preparepcm(MIDIHD
+ 	UINT	rem;
+ 
+ 	ret = 0;
+-	size = min(size, hdl->worksize);
++	size = xnp2min(size, hdl->worksize);
+ 	buf = hdl->sampbuf;
+ 	ZeroMemory(buf, size * 2 * sizeof(SINT32));
+ 	v = VOICEHDLPTR(hdl);
+diff -upr xnp2-0.86.orig/vram/dispsync.c xnp2-0.86/vram/dispsync.c
+--- xnp2-0.86.orig/vram/dispsync.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/vram/dispsync.c	2016-07-10 07:05:37.452140484 +0900
+@@ -59,7 +59,7 @@ BOOL dispsync_renewalhorizontal(void) {
+ 	}
+ 	scrnxmax = cr + 2;
+ 	if ((scrnxpos + scrnxmax) > 80) {
+-		scrnxmax = min(scrnxmax, 80);
++		scrnxmax = xnp2min(scrnxmax, 80);
+ 		scrnxpos = 80 - scrnxmax;
+ 	}
+ 	scrnxpos <<= 3;
+@@ -123,7 +123,7 @@ BOOL dispsync_renewalvertical(void) {
+ 	dsync.textymax = textymax;
+ 	dsync.grphymax = grphymax;
+ 
+-	scrnymax = max(grphymax, textymax);
++	scrnymax = xnp2max(grphymax, textymax);
+ 	scrnymax = (scrnymax + 7) & (~7);
+ 	if (dsync.scrnymax != scrnymax) {
+ 		dsync.scrnymax = scrnymax;
+diff -upr xnp2-0.86.orig/vram/maketgrp.c xnp2-0.86/vram/maketgrp.c
+--- xnp2-0.86.orig/vram/maketgrp.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/vram/maketgrp.c	2016-07-10 07:05:37.452140484 +0900
+@@ -136,7 +136,7 @@ void maketextgrph(int plane, int text_re
+ 
+ 	ppage = (plane)?VRAM_STEP:0;
+ 	gbit = 0x01010101 << plane;
+-	ymax = min(dsync.textymax, dsync.grphymax);
++	ymax = xnp2min(dsync.textymax, dsync.grphymax);
+ 	q = np2_vram[plane] + dsync.textvad;
+ 	wait1 = 0;
+ 	TEXT_LRcnt = 0;
+@@ -394,7 +394,7 @@ void maketextgrph40(int plane, int text_
+ 
+ 	ppage = (plane)?VRAM_STEP:0;
+ 	gbit = 0x01010101 << plane;
+-	ymax = min(dsync.textymax, dsync.grphymax);
++	ymax = xnp2min(dsync.textymax, dsync.grphymax);
+ 	q = np2_vram[plane] + dsync.textvad;
+ 	wait1 = 0;
+ 	TEXT_LRcnt = 0;
+diff -upr xnp2-0.86.orig/vram/scrnsave.c xnp2-0.86/vram/scrnsave.c
+--- xnp2-0.86.orig/vram/scrnsave.c	2016-03-09 02:25:49.000000000 +0900
++++ xnp2-0.86/vram/scrnsave.c	2016-07-10 07:05:37.452140484 +0900
+@@ -555,7 +555,7 @@ const PALNUM	*s;
+ 	STOREINTELWORD(bitbuf + 7, sd->height);		// cy
+ 	bitbuf[9] = 0;								// noninterlace
+ 
+-	bpp = max(bpp, 2);
++	bpp = xnp2max(bpp, 2);
+ 	bitbuf[10] = (UINT8)bpp;
+ 	if (file_write(fh, bitbuf, 11) != 11) {
+ 		goto sswg_err4;
+diff -upr xnp2-0.86.orig/x11/compiler.h xnp2-0.86/x11/compiler.h
+--- xnp2-0.86.orig/x11/compiler.h	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/x11/compiler.h	2016-07-10 07:05:37.452140484 +0900
+@@ -118,10 +118,10 @@ typedef	gboolean	BOOL;
+ #endif
+ 
+ #ifndef	max
+-#define	max(a,b)	(((a) > (b)) ? (a) : (b))
++#define	xnp2max(a,b)	(((a) > (b)) ? (a) : (b))
+ #endif
+ #ifndef	min
+-#define	min(a,b)	(((a) < (b)) ? (a) : (b))
++#define	xnp2min(a,b)	(((a) < (b)) ? (a) : (b))
+ #endif
+ 
+ #ifndef	ZeroMemory
+diff -upr xnp2-0.86.orig/x11/gtk2/gtk_font.c xnp2-0.86/x11/gtk2/gtk_font.c
+--- xnp2-0.86.orig/x11/gtk2/gtk_font.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/x11/gtk2/gtk_font.c	2016-07-10 07:05:37.453140486 +0900
+@@ -264,7 +264,7 @@ fontmng_getdrawsize(void *hdl, const cha
+ 			memcpy(buf, str, len * sizeof(char));
+ 			buf[len] = '\0';
+ 			getlength1(fhdl, &fdat, buf, len);
+-			width = posx + max(fdat.width, fdat.pitch);
++			width = posx + xnp2max(fdat.width, fdat.pitch);
+ 			posx += fdat.pitch;
+ 		}
+ 	}
+diff -upr xnp2-0.86.orig/x11/gtk2/gtk_screen.c xnp2-0.86/x11/gtk2/gtk_screen.c
+--- xnp2-0.86.orig/x11/gtk2/gtk_screen.c	2016-03-09 02:25:50.000000000 +0900
++++ xnp2-0.86/x11/gtk2/gtk_screen.c	2016-07-10 07:05:37.453140486 +0900
+@@ -128,8 +128,8 @@ renewal_client_size(void)
+ 	int scrnheight;
+ 	int multiple;
+ 
+-	width = min(scrnstat.width, drawmng.width);
+-	height = min(scrnstat.height, drawmng.height);
++	width = xnp2min(scrnstat.width, drawmng.width);
++	height = xnp2min(scrnstat.height, drawmng.height);
+ 	extend = 0;
+ 
+ 	if (drawmng.scrnmode & SCRNMODE_FULLSCREEN) {
+@@ -155,7 +155,7 @@ renewal_client_size(void)
+ 		multiple = scrnstat.multiple;
+ 		if (!(drawmng.scrnmode & SCRNMODE_ROTATE)) {
+ 			if ((np2oscfg.paddingx > 0) && (multiple == SCREEN_DEFMUL)) {
+-				extend = min(scrnstat.extend, drawmng.extend);
++				extend = xnp2min(scrnstat.extend, drawmng.extend);
+ 			}
+ 			scrnwidth = (width * multiple) / SCREEN_DEFMUL;
+ 			scrnheight = (height * multiple) / SCREEN_DEFMUL;
+@@ -170,7 +170,7 @@ renewal_client_size(void)
+ 			drawmng.scrn.top = np2oscfg.paddingy;
+ 		} else {
+ 			if ((np2oscfg.paddingy > 0) && (multiple == SCREEN_DEFMUL)) {
+-				extend = min(scrnstat.extend, drawmng.extend);
++				extend = xnp2min(scrnstat.extend, drawmng.extend);
+ 			}
+ 			scrnwidth = (height * multiple) / SCREEN_DEFMUL;
+ 			scrnheight = (width * multiple) / SCREEN_DEFMUL;
+@@ -217,8 +217,8 @@ clear_out_of_rect(const RECT_T *target,
+ 		    rect.left, rect.top, rect.right, rect.bottom);
+ 	}
+ 
+-	rect.top = max(base->top, target->top);
+-	rect.bottom = min(base->bottom, target->bottom);
++	rect.top = xnp2max(base->top, target->top);
++	rect.bottom = xnp2min(base->bottom, target->bottom);
+ 	if (rect.top < rect.bottom) {
+ 		rect.left = base->left;
+ 		rect.right = target->left;

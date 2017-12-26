@@ -1,0 +1,11 @@
+--- xnp2-0.86/x11/configure.ac.orig	2017-12-25 19:56:00.269526727 +0900
++++ xnp2-0.86/x11/configure.ac	2017-12-25 19:56:20.116611901 +0900
+@@ -70,7 +70,7 @@
+ dnl Checks for pthread
+ dnl
+ ACX_PTHREAD
+-LIBS="$LIBS $PTHREAD_LIBS"
++LIBS="$LIBS -lpthread"
+ CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+ CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+ 
