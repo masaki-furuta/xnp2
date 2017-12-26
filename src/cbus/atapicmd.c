@@ -1,9 +1,9 @@
 #include	"compiler.h"
 
-#ifdef	TRACEOUT
+#if 0
 #undef	TRACEOUT
-#endif
 #define	TRACEOUT(s)	trace_fmt s
+#endif	/* 0 */
 
 // ‚±‚êAscsicmd‚Æ‚Ç‚¤“‡‚·‚é‚Ì‚æH
 
@@ -50,7 +50,7 @@ static const UINT8 cdrom_inquiry[] = {
 
 static void senddata(IDEDRV drv, UINT size, UINT limit) {
 
-	size = xnp2min(size, limit);
+	size = min(size, limit);
 	drv->sc = IDEINTR_IO;
 	drv->cy = size;
 	drv->status &= ~(IDESTAT_BSY|IDESTAT_DMRD|IDESTAT_SERV|IDESTAT_CHK);
@@ -432,7 +432,7 @@ static void atapi_cmd_mode_sense(IDEDRV drv) {
 		else {
 			ptr = defval_pagecode_01;
 		}
-		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_01_SIZE));
+		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_01_SIZE));
 		cnt += PC_01_SIZE;
 		if (cnt > leng) {
 			goto length_exceeded;
@@ -449,7 +449,7 @@ static void atapi_cmd_mode_sense(IDEDRV drv) {
 		else {
 			ptr = defval_pagecode_0d;
 		}
-		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_0D_SIZE));
+		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_0D_SIZE));
 		cnt += PC_0D_SIZE;
 		if (cnt > leng) {
 			goto length_exceeded;
@@ -466,7 +466,7 @@ static void atapi_cmd_mode_sense(IDEDRV drv) {
 		else {
 			ptr = defval_pagecode_0e;
 		}
-		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_0E_SIZE));
+		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_0E_SIZE));
 		cnt += PC_0E_SIZE;
 		if (cnt > leng) {
 			goto length_exceeded;
@@ -483,7 +483,7 @@ static void atapi_cmd_mode_sense(IDEDRV drv) {
 		else {
 			ptr = defval_pagecode_2a;
 		}
-		CopyMemory(drv->buf + cnt, ptr, xnp2min((leng - cnt), PC_2A_SIZE));
+		CopyMemory(drv->buf + cnt, ptr, min((leng - cnt), PC_2A_SIZE));
 		cnt += PC_2A_SIZE;
 		if (cnt > leng) {
 			goto length_exceeded;

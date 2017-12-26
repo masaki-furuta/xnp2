@@ -40,7 +40,7 @@ UINT bmpdata_sethead(BMPFILE *bf, const BMPINFO *bi) {
 	bit = LOADINTELWORD(bi->biBitCount);
 	if (bit < 8) {
 		pal = LOADINTELDWORD(bi->biClrUsed);
-		pal = xnp2min(pal, (UINT)(1 << bit));
+		pal = min(pal, (UINT)(1 << bit));
 		ret += pal * 4;
 	}
 	if (bf) {
@@ -156,7 +156,7 @@ UINT8 *bmpdata_lzx(int level, int dstsize, const UINT8 *dat) {
 			tmp |= *dat++;
 			pos = -1 - (tmp >> level);
 			leng = (tmp & mask) + 1;
-			leng = xnp2min(leng, dstsize);
+			leng = min(leng, dstsize);
 			dstsize -= leng;
 			while(leng--) {
 				*ptr = *(ptr + pos);

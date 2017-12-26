@@ -34,7 +34,7 @@ static _SMP_OUT *FUNC_NOR(GETSND trk, _SMP_OUT *pcm, _SMP_OUT *pcmterm) {
 	_SMP_IN	*samp;
 	UINT	size;
 
-	size = xnp2min(trk->remain, (UINT)((pcmterm - pcm) / 2));
+	size = min(trk->remain, (UINT)((pcmterm - pcm) / 2));
 	trk->remain -= size;
 	samp = (_SMP_IN *)trk->buf;
 	do {
@@ -103,10 +103,8 @@ static _SMP_OUT *FUNC_DOWN(GETSND trk, _SMP_OUT *pcm, _SMP_OUT *pcmterm) {
 static _SMP_OUT *FUNC_UP(GETSND trk, _SMP_OUT *pcm, _SMP_OUT *pcmterm) {
 
 	_SMP_IN	*samp;
-	long	mrate;
 
 	samp = (_SMP_IN *)trk->buf;
-	mrate = trk->mrate;
 	do {
 		long tmp;
 		tmp = UPMIXBASE - trk->rem;

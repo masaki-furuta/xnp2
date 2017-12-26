@@ -171,6 +171,8 @@ static void VERMOUTHCL resample(MIDIMOD mod, INSTLAYER inst, int freq) {
 		if ((dstterm - dst) != newcnt) {
 			TRACEOUT(("resample error %d %d", newcnt, dstterm - dst));
 		}
+#else
+		(void)dstterm;
 #endif
 		inst->datasize = newcnt << FREQ_SHIFT;
 		inst->loopstart = 0;
@@ -398,7 +400,7 @@ const UINT8		*d;
 				if (sampdat < 0) {
 					sampdat *= -1;
 				}
-				sampmax = xnp2max(sampmax, sampdat);
+				sampmax = max(sampmax, sampdat);
 			} while(--cnt);
 			layer->volume = 32768 * 128 / sampmax;
 		}

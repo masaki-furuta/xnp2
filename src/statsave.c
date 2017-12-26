@@ -27,6 +27,7 @@
 #include "vram.h"
 #include "palettes.h"
 #include "maketext.h"
+#include "sound/sndcsec.h"
 #include "sound.h"
 #include "fmboard.h"
 #include "beep.h"
@@ -585,13 +586,11 @@ static int flagload_epson(STFLAGH sfh, const SFENTRY *tbl) {
 
 typedef struct {
 	UINT		readyevents;
-	UINT		waitevents;
 } NEVTSAVE;
 
 typedef struct {
 	UINT32		id;
 	SINT32		clock;
-	UINT32		flag;
 	NEVENTCB	proc;
 } NEVTITEM;
 
@@ -608,7 +607,6 @@ static int nevent_write(STFLAGH sfh, NEVENTID num) {
 		}
 	}
 	nit.clock = g_nevent.item[num].clock;
-	nit.flag = g_nevent.item[num].flag;
 	nit.proc = g_nevent.item[num].proc;
 	if (PROC2NUM(nit.proc, evtproc)) {
 		nit.proc = NULL;
@@ -623,14 +621,10 @@ static int flagsave_evt(STFLAGH sfh, const SFENTRY *tbl) {
 	UINT		i;
 
 	nevt.readyevents = g_nevent.readyevents;
-	nevt.waitevents = g_nevent.waitevents;
 
 	ret = statflag_write(sfh, &nevt, sizeof(nevt));
 	for (i=0; i<nevt.readyevents; i++) {
 		ret |= nevent_write(sfh, g_nevent.level[i]);
-	}
-	for (i=0; i<nevt.waitevents; i++) {
-		ret |= nevent_write(sfh, g_nevent.waitevent[i]);
 	}
 	(void)tbl;
 	return(ret);
@@ -653,7 +647,6 @@ static int nevent_read(STFLAGH sfh, NEVENTID *tbl, UINT *pos) {
 	if (i < NELEMENTS(evtnum)) {
 		num = evtnum[i].num;
 		g_nevent.item[num].clock = nit.clock;
-		g_nevent.item[num].flag = nit.flag;
 		g_nevent.item[num].proc = nit.proc;
 		if (NUM2PROC(g_nevent.item[num].proc, evtproc)) {
 			ret |= STATFLAG_WARNING;
@@ -678,13 +671,8 @@ static int flagload_evt(STFLAGH sfh, const SFENTRY *tbl) {
 	ret = statflag_read(sfh, &nevt, sizeof(nevt));
 
 	g_nevent.readyevents = 0;
-	g_nevent.waitevents = 0;
-
 	for (i=0; i<nevt.readyevents; i++) {
 		ret |= nevent_read(sfh, g_nevent.level, &g_nevent.readyevents);
-	}
-	for (i=0; i<nevt.waitevents; i++) {
-		ret |= nevent_read(sfh, g_nevent.waitevent, &g_nevent.waitevents);
 	}
 	(void)tbl;
 	return(ret);
@@ -918,7 +906,7 @@ static int flagload_fm(STFLAGH sfh, const SFENTRY *tbl)
 	pcm86gen_update();
 	if (nSaveFlags & FLAG_PCM86)
 	{
-		fmboard_extenable((REG8)(g_pcm86.extfunc & 1));
+		fmboard_extenable((REG8)(g_pcm86.cSoundFlags & 1));
 	}
 	if (nSaveFlags & FLAG_CS4231)
 	{
@@ -973,6 +961,7 @@ static int flagload_fdd(STFLAGH sfh, const SFENTRY *tbl) {
 
 	ret = STATFLAG_SUCCESS;
 	for (i=0; i<4; i++) {
+		memset(&sp, 0, sizeof(sp));
 		ret |= statflag_read(sfh, &sp, sizeof(sp));
 		if (sp.path[0]) {
 			fdd_set(i, sp.path, sp.ftype, sp.readonly);
@@ -1136,7 +1125,7 @@ static int flagload_com(STFLAGH sfh, const SFENTRY *tbl) {
 	if (flag == NULL) {
 		goto flcom_err1;
 	}
-	CopyMemory(flag, &fhdr, sizeof(fhdr));
+	*flag = fhdr;
 	ret |= statflag_read(sfh, flag + 1, fhdr.size - sizeof(fhdr));
 	if (ret != STATFLAG_SUCCESS) {
 		goto flcom_err2;
@@ -1205,6 +1194,8 @@ const SFENTRY	*tblterm;
 		return(STATFLAG_FAILURE);
 	}
 
+	SNDCSEC_ENTER;
+
 	ret = STATFLAG_SUCCESS;
 	tbl = np2tbl;
 	tblterm = tbl + NELEMENTS(np2tbl);
@@ -1270,6 +1261,9 @@ const SFENTRY	*tblterm;
 		}
 		tbl++;
 	}
+
+	SNDCSEC_LEAVE;
+
 	statflag_close(sffh);
 	return(ret);
 }
@@ -1367,6 +1361,8 @@ const SFENTRY	*tblterm;
 		statflag_close(sffh);
 		return(STATFLAG_FAILURE);
 	}
+
+	SNDCSEC_ENTER;
 
 	soundmng_stop();
 	rs232c_midipanic();
@@ -1494,6 +1490,8 @@ const SFENTRY	*tblterm;
 	MEMM_VRAM(vramop.operate);
 	fddmtr_reset();
 	soundmng_play();
+
+	SNDCSEC_LEAVE;
 
 	return(ret);
 }

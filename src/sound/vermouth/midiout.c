@@ -320,7 +320,7 @@ static void VERMOUTHCL key_on(MIDIHDL hdl, CHANNEL ch, int key, int vel) {
 		if (!(v2->phase & (VOICE_ON | VOICE_REL))) {
 			vol = v2->envleft;
 			if ((v2->flag & VOICE_MIXMASK) == VOICE_MIXNORMAL) {
-				vol = xnp2max(vol, v2->envright);
+				vol = max(vol, v2->envright);
 			}
 			if (volmin > vol) {
 				volmin = vol;
@@ -716,7 +716,7 @@ static void VERMOUTHCL _allresetmidi(MIDIHDL hdl)
 
 VEXTERN UINT VEXPORT midiout_getver(char *string, UINT leng) {
 
-	leng = xnp2min(leng, sizeof(vermouthver));
+	leng = min(leng, sizeof(vermouthver));
 	CopyMemory(string, vermouthver, leng);
 	return((MIDIOUT_VERSION << 8) | 0x00);
 }
@@ -729,8 +729,8 @@ VEXTERN MIDIHDL VEXPORT midiout_create(MIDIMOD mod, UINT worksize) {
 	if (mod == NULL) {
 		return(NULL);
 	}
-	worksize = xnp2min(worksize, 512U);
-	worksize = xnp2max(worksize, 16384U);
+	worksize = min(worksize, 512U);
+	worksize = max(worksize, 16384U);
 	size = sizeof(_MIDIHDL);
 	size += sizeof(SINT32) * 2 * worksize;
 	size += sizeof(_SAMPLE) * worksize;
@@ -1079,7 +1079,7 @@ static UINT	VERMOUTHCL preparepcm(MIDIHDL hdl, UINT size) {
 	UINT	rem;
 
 	ret = 0;
-	size = xnp2min(size, hdl->worksize);
+	size = min(size, hdl->worksize);
 	buf = hdl->sampbuf;
 	ZeroMemory(buf, size * 2 * sizeof(SINT32));
 	v = VOICEHDLPTR(hdl);

@@ -49,6 +49,9 @@
 #include "s98.h"
 #include "fdd/diskdrv.h"
 #include "fdd/fddfile.h"
+#if defined(SUPPORT_IDEIO)
+#include "fdd/sxsi.h"
+#endif	// defined(SUPPORT_IDEIO)
 #include "timing.h"
 #include "keystat.h"
 #include "debugsub.h"
@@ -418,19 +421,18 @@ static void OpenSoundDevice(HWND hWnd)
 
 // ---- proc
 
-static void np2popup(HWND hWnd, LPARAM lp) {
-
-	HMENU	mainmenu;
-	HMENU	hMenu;
-	POINT	pt;
-
-	mainmenu = (HMENU)GetWindowLongPtr(hWnd, NP2GWLP_HMENU);
-	if (mainmenu == NULL) {
+static void np2popup(HWND hWnd, LPARAM lp)
+{
+	HMENU hMainMenu = reinterpret_cast<HMENU>(GetWindowLongPtr(hWnd, NP2GWLP_HMENU));
+	if (hMainMenu == NULL)
+	{
 		return;
 	}
-	hMenu = CreatePopupMenu();
-	menu_addmenubar(hMenu, mainmenu);
+	HMENU hMenu = CreatePopupMenu();
+	InsertMenuPopup(hMenu, 0, TRUE, hMainMenu);
 	xmenu_update(hMenu);
+
+	POINT pt;
 	pt.x = LOWORD(lp);
 	pt.y = HIWORD(lp);
 	ClientToScreen(hWnd, &pt);
@@ -581,7 +583,7 @@ static void OnCommand(HWND hWnd, WPARAM wParam)
 			break;
 
 		case IDM_IDE2EJECT:
-			diskdrv_setsxsi(0x02, NULL);
+			sxsi_devclose(0x02);
 			break;
 #endif
 
@@ -1638,7 +1640,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst,
 
 	sysmenu_initialize(GetSystemMenu(hWnd, FALSE));
 
-	HMENU hMenu = GetMenu(hWnd);
+	HMENU hMenu = np2class_gethmenu(hWnd);
 	xmenu_initialize(hMenu);
 	xmenu_update(hMenu);
 	if (file_attr_c(np2help) == -1)								// ver0.30
@@ -1668,14 +1670,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst,
 
 	CSoundMng::Initialize();
 	OpenSoundDevice(hWnd);
-
-	if (CSoundMng::GetInstance()->Open(static_cast<CSoundMng::DeviceType>(np2oscfg.cSoundDeviceType), np2oscfg.szSoundDeviceName, hWnd))
-	{
-		CSoundMng::GetInstance()->LoadPCM(SOUND_PCMSEEK, TEXT("SEEKWAV"));
-		CSoundMng::GetInstance()->LoadPCM(SOUND_PCMSEEK1, TEXT("SEEK1WAV"));
-		CSoundMng::GetInstance()->SetPCMVolume(SOUND_PCMSEEK, np2cfg.MOTORVOL);
-		CSoundMng::GetInstance()->SetPCMVolume(SOUND_PCMSEEK1, np2cfg.MOTORVOL);
-	}
 
 	if (np2oscfg.MOUSE_SW) {										// ver0.30
 		mousemng_enable(MOUSEPROC_SYSTEM);

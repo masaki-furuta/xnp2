@@ -128,14 +128,14 @@ void debugwriteseg(const OEMCHAR *fname, const descriptor_t *sd,
 	if (limit <= addr) {
 		return;
 	}
-	size = xnp2min(limit - addr, size - 1) + 1;
+	size = min(limit - addr, size - 1) + 1;
 	fh = file_create_c(fname);
 	if (fh == FILEH_INVALID) {
 		return;
 	}
 	addr += sd->u.seg.segbase;
 	while(size) {
-		limit = xnp2min(size, sizeof(buf));
+		limit = min(size, sizeof(buf));
 		MEML_READS(addr, buf, limit);
 		file_write(fh, buf, limit);
 		addr += limit;

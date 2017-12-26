@@ -63,7 +63,7 @@ static BRESULT setidentify(IDEDRV drv) {
 	UINT32	size;
 
 	sxsi = sxsi_getptr(drv->sxsidrv);
-	if ((sxsi == NULL) || (!(sxsi->flag & SXSIFLAG_READY))) {
+	if ((sxsi == NULL) || (!(sxsi->flag & SXSIFLAG_READY) && drv->device != IDETYPE_CDROM)) {
 		return(FAILURE);
 	}
 
@@ -936,7 +936,7 @@ const UINT8	*ptr;
 		return(FAILURE);
 	}
 	while(count) {
-		r = xnp2min(count, drv->dabufrem);
+		r = min(count, drv->dabufrem);
 		if (r) {
 			count -= r;
 			ptr = drv->dabuf + 2352 - (drv->dabufrem * 4);

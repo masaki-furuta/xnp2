@@ -139,7 +139,7 @@ static void bios_reinitbyswitch(void) {
 	}
 	mem[MEMB_BIOS_FLAG1] = biosflag;
 	extmem = pccore.extmem;
-	extmem = xnp2min(extmem, 14);
+	extmem = min(extmem, 14);
 	mem[MEMB_EXPMMSZ] = (UINT8)(extmem << 3);
 	if (pccore.extmem >= 15) {
 		mem[0x0594] = pccore.extmem - 15;
@@ -168,6 +168,10 @@ static void bios_reinitbyswitch(void) {
 	mem[MEMB_CRT_BIOS] |= 0x04;		// 05/02/03
 	mem[0x45c] = 0x40;
 #endif
+
+#if defined(SUPPORT_PC9801_119)
+	mem[MEMB_BIOS_FLAG3] |= 0x40;
+#endif	/* defined(SUPPORT_PC9801_119) */
 
 	// FDC
 	if (fdc.support144) {

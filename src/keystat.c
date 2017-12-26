@@ -7,22 +7,30 @@
 #include	"keystat.tbl"
 #include	"softkbd.h"
 
+	KEYCTRL		keyctrl;
+	KEYSTAT		keystat;
 
 typedef struct {
-	UINT8	ref[0x80];
-	UINT8	extkey;
-	UINT8	mouselast;
-	UINT8	padding;
-	UINT8	d_up;
-	UINT8	d_dn;
-	UINT8	d_lt;
-	UINT8	d_rt;
-} KEYSTAT;
+	UINT8	keys;
+	UINT8	key[1];
+} NKEYM;
 
-		NKEYTBL		nkeytbl;
-		KEYCTRL		keyctrl;
-static	KEYSTAT		keystat;
+typedef struct {
+	UINT8	keys;
+	UINT8	key[3];
+} NKEYM3;
 
+typedef struct {
+	UINT8	keys;
+	UINT8	key[15];
+} NKEYM15;
+
+typedef struct {
+	NKEYM3	key[NKEY_SYSTEM];
+	NKEYM15	user[NKEY_USERKEYS];
+} NKEYTBL;
+
+static	NKEYTBL		nkeytbl;
 
 void keystat_initialize(void) {
 
@@ -61,11 +69,11 @@ void keystat_tblset(REG8 ref, const UINT8 *key, UINT cnt) {
 
 	if ((ref >= NKEY_USER) && (ref < (NKEY_USER + NKEY_USERKEYS))) {
 		nkey = (NKEYM *)(nkeytbl.user + (ref - NKEY_USER));
-		cnt = xnp2min(cnt, 15);
+		cnt = min(cnt, 15);
 	}
 	else if (ref < NKEY_SYSTEM) {
 		nkey = (NKEYM *)(nkeytbl.key + ref);
-		cnt = xnp2min(cnt, 3);
+		cnt = min(cnt, 3);
 	}
 	else {
 		return;
@@ -477,7 +485,6 @@ void keystat_allrelease(void) {
 		keystat_releasekey(i);
 	}
 }
-
 
 REG8 keystat_getjoy(void) {
 

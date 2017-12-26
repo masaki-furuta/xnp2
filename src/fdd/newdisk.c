@@ -19,10 +19,9 @@ void newdisk_fdd(const OEMCHAR *fname, REG8 type, const OEMCHAR *label) {
 	ZeroMemory(&d88head, sizeof(d88head));
 	STOREINTELDWORD(d88head.fd_size, sizeof(d88head));
 #if defined(OSLANG_UTF8) || defined(OSLANG_UCS2)
-	oemtext_oemtosjis((char *)d88head.fd_name, sizeof(d88head.fd_name),
-															label, (UINT)-1);
+	oemtext_oemtosjis((char *)d88head.fd_name, NELEMENTS(d88head.fd_name), label, (UINT)-1);
 #else
-	milstr_ncpy((char *)d88head.fd_name, label, sizeof(d88head.fd_name));
+	milstr_ncpy((char *)d88head.fd_name, label, NELEMENTS(d88head.fd_name));
 #endif
 	d88head.fd_type = type;
 	fh = file_create(fname);
@@ -42,7 +41,7 @@ static BRESULT writezero(FILEH fh, UINT size) {
 
 	ZeroMemory(work, sizeof(work));
 	while(size) {
-		wsize = xnp2min(size, sizeof(work));
+		wsize = min(size, sizeof(work));
 		if (file_write(fh, work, wsize) != wsize) {
 			return(FAILURE);
 		}
@@ -69,7 +68,7 @@ static BRESULT writehddipl(FILEH fh, UINT ssize, UINT32 tsize) {
 		tsize -= sizeof(work);
 		ZeroMemory(work, sizeof(work));
 		while(tsize) {
-			size = xnp2min(tsize, sizeof(work));
+			size = min(tsize, sizeof(work));
 			tsize -= size;
 			if (file_write(fh, work, size) != size) {
 				return(FAILURE);
